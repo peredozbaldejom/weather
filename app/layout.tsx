@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import Posts from "@/app/ui/posts"
+
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -14,9 +16,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className}`}>
+          {children}
+      </body>
     </html>
   )
 }
