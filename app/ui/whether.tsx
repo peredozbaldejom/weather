@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect, ChangeEvent } from 'react';
 
 interface Coord {
@@ -65,6 +67,7 @@ interface WeatherData {
 const WeatherForecast: React.FunctionComponent = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [city, setCity] = useState<string>('Moscow');
+  const [modal, setModal] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchWeatherData = async () => {
@@ -94,8 +97,8 @@ const WeatherForecast: React.FunctionComponent = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-violet-100 to-indigo-100 flex items-center justify-center h-screen">
-      <div className="w-11/12 sm:w-11/12 md:w-8/12 lg:w-6/12 backdrop-blur-sm bg-white/40 p-6 rounded-lg shadow-sm border-violet-200 border">
+    <div className="bg-gradient-to-r from-violet-100 to-indigo-100 flex sm:items-start lg:items-center justify-center h-screen ">
+      <div className="w-11/12 sm:w-11/12 md:w-8/12 lg:w-6/12 backdrop-blur-sm bg-white/40 p-6 rounded-lg shadow-sm border-violet-200 border mt-[1.5rem]">
         <div className="w-full flex justify-between items-center p-3">
           <h2 className="text-xl font-semibold">Weather</h2>
         </div>
@@ -127,23 +130,52 @@ const WeatherForecast: React.FunctionComponent = () => {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-1 gap-4">
-          <div className="backdrop-blur-sm bg-white/20 p-6 rounded-md shadow-sm cursor-pointer border-2 border-gray-50 hover:border-violet-200 hover:border-2 transition-colors duration-300">
-            <h2 className="text-xl font-semibold mb-4">{`Weather in ${city}`}</h2>
-            <p className="text-gray-700">Data from OpenWeatherMap.</p>
-            <div className="col-start-2 row-start-1 row-end-3 sm:mt-4 lg:mt-4 xl:mt-4">
-              {weatherData ? (
-                <div>
-                  <p>Temperature: {Math.round(weatherData.main.temp - 273.15)} C</p>
-                  <p>Weather: {weatherData.weather[0].description}</p>
+        <button className='w-full' onClick={(e) => {setModal(!modal)}}>
+            <div className="flex w-full">
+                <div className="w-full backdrop-blur-sm text-left bg-white/20 p-6 rounded-md shadow-sm cursor-pointer border-2 border-gray-50 hover:border-violet-200 hover:border-2 transition-colors duration-300">
+                    <h2 className="text-xl font-semibold mb-4">{`Weather in ${city}`}</h2>
+                    <p className="text-gray-700">Data from OpenWeatherMap.</p>
+                    <div className="col-start-2 row-start-1 row-end-3 sm:mt-4 lg:mt-4 xl:mt-4">
+                    {weatherData ? (
+                        <div>
+                        <p>Temperature: {Math.round(weatherData.main.temp - 273.15)} C</p>
+                        <p>Weather: {weatherData.weather[0].description}</p>
+                        </div>
+                    ) : (
+                        <p>Loading...</p>
+                    )}
+                    </div>
                 </div>
-              ) : (
-                <p>Loading...</p>
-              )}
             </div>
-          </div>
-        </div>
+        </button>    
       </div>
+    
+    { modal ? (
+        <div id="myModal" className="fixed inset-0 z-10 overflow-hidden backdrop-blur-lg  flex items-center justify-center transition-transform duration-300">
+        <div className="modal-container p-6 backdrop-blur-sm bg-white/90 w-11/12 sm:w-11/12 md:w-8/12 lg:w-6/12 rounded-md shadow-sm">
+            <h2 className="text-2xl font-semibold mb-6">{city}</h2>
+            {weatherData ? (
+                <div>
+                <p>Temperature: {Math.round(weatherData.main.temp - 273.15)} C</p>
+                <p>Weather: {weatherData.weather[0].description}</p>
+                <p>Pressure: {weatherData.main.pressure}</p>
+                <p>Wind: {weatherData.wind.speed}</p>
+
+                </div>
+            ) : (
+                <p>Loading...</p>
+            )}
+
+            <div className="flex justify-end">
+                <button 
+                    className="bg-gradient-to-r from-gray-100 to-slate-200  border border-fuchsia-00 hover:border-violet-400  text-gray-800 font-semibold py-2 px-4 rounded-md transition-colors duration-400" 
+                    onClick={(e) => {setModal(!modal)}}>Cancel</button>
+            </div>
+        </div>
+    </div>
+    ) : (
+        null
+    )}
     </div>
   );
 };
