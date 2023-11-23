@@ -27,9 +27,7 @@ export const getWhether = async () => {
 
     if (response.ok) {
       const result = await response.json();
-      console.log('its a getwhetther -----', result);
       return result;
-      // setData(result);
     } else {
       console.error('Failed to fetch data');
     }

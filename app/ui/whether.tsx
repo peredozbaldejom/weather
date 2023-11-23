@@ -66,7 +66,7 @@ interface WeatherData {
 
 const WeatherForecast: React.FunctionComponent = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [city, setCity] = useState<string>('Moscow');
+  const [city, setCity] = useState<string>('');
   const [modal, setModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -74,7 +74,6 @@ const WeatherForecast: React.FunctionComponent = () => {
       try {
         const apiKey = 'dd1dbc504cbc5794452a0bbf8597606a';
         const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
-
         const response = await fetch(apiUrl);
 
         if (response.ok) {
