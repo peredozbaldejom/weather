@@ -64,6 +64,69 @@ interface WeatherData {
   cod: number;
 }
 
+
+interface WeatherMap {
+    dt_txt: string;
+    main: {
+      temp: number;
+    };
+    weather: {
+      description: string;
+    }[];
+  }
+
+interface ForecastData {
+    list: WeatherMap[];
+  }
+
+
+export const MapForecast = ({city}  :  {city : string}) => {
+  const [forecastData, setForecastData] = useState<ForecastData | null>(null);
+//   const city = 'Moscow'; // Замените на название нужного города
+  const apiKey = 'bb5192b15e1c1a93f2a8a8f7afcc5d8b'; 
+
+  useEffect(() => {
+    const fetchForecastData = async () => {
+      try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}`);
+
+        if (response.ok) {
+          const result : ForecastData = await response.json();
+          setForecastData(result);
+        } else {
+          console.error('Failed to fetch forecast data');
+        }
+      } catch (error) {
+        console.error('Error during fetch:', error);
+      }
+    };
+
+    fetchForecastData();
+  }, [city, apiKey]);
+
+  return (
+    <div>
+      <h2>Weekly Weather Forecast for {city}</h2>
+      {forecastData ? (
+        <div>
+          {forecastData.list.map((forecast, index) => (
+            <div key={index}>
+              <p>Date and Time: {forecast.dt_txt}</p>
+              <p>Temperature: {forecast.main.temp} K</p>
+              <p>Weather: {forecast.weather[0].description}</p>
+              <hr />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
+  );
+};
+
+
+
 const WeatherForecast: React.FunctionComponent = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [city, setCity] = useState<string>('');
@@ -72,10 +135,11 @@ const WeatherForecast: React.FunctionComponent = () => {
   useEffect(() => {
     const fetchWeatherData = async () => {
       try {
-        const apiKey = 'dd1dbc504cbc5794452a0bbf8597606a';
+        const apiKey = 'bb5192b15e1c1a93f2a8a8f7afcc5d8b';
         const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
-        const response = await fetch(apiUrl);
 
+        const response = await fetch(apiUrl);
+        console.log(response)
         if (response.ok) {
           const result: WeatherData = await response.json();
           console.log(result);
@@ -90,6 +154,8 @@ const WeatherForecast: React.FunctionComponent = () => {
 
     fetchWeatherData();
   }, [city]);
+
+
 
   const handleCityChange = (e: ChangeEvent<HTMLInputElement>) => {
     setCity(e.target.value);
@@ -155,11 +221,12 @@ const WeatherForecast: React.FunctionComponent = () => {
             <h2 className="text-2xl font-semibold mb-6">{city}</h2>
             {weatherData ? (
                 <div>
-                <p>Temperature: {Math.round(weatherData.main.temp - 273.15)} C</p>
-                <p>Weather: {weatherData.weather[0].description}</p>
-                <p>Pressure: {weatherData.main.pressure}</p>
-                <p>Wind: {weatherData.wind.speed}</p>
-
+                    {/* <p>Temperature: {Math.round(weatherData.main.temp - 273.15)} C</p>
+                    <p>Weather: {weatherData.weather[0].description}</p>
+                    <p>Pressure: {weatherData.main.pressure}</p>
+                    <p>Wind: {weatherData.wind.speed}</p>
+                     */}
+                     <MapForecast city={city} />
                 </div>
             ) : (
                 <p>Loading...</p>
