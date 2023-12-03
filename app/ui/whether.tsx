@@ -2,89 +2,12 @@
 
 import React, { useState, useEffect, ChangeEvent, useRef } from 'react';
 import { Chart } from 'chart.js/auto';
-
-interface Coord {
-  lon: number;
-  lat: number;
-}
-
-interface Weather {
-  id: number;
-  main: string;
-  description: string;
-  icon: string;
-}
-
-interface Main {
-  temp: number;
-  feels_like: number;
-  temp_min: number;
-  temp_max: number;
-  pressure: number;
-  humidity: number;
-  sea_level: number;
-  grnd_level: number;
-}
-
-interface Wind {
-  speed: number;
-  deg: number;
-  gust: number;
-}
-
-interface Rain {
-  '1'?: number;
-}
-
-interface Clouds {
-  all: number;
-}
-
-interface Sys {
-  type: number;
-  id: number;
-  country: string;
-  sunrise: number;
-  sunset: number;
-}
-
-interface WeatherData {
-  coord: Coord;
-  weather: Weather[];
-  base: string;
-  main: Main;
-  visibility: number;
-  wind: Wind;
-  rain: Rain;
-  clouds: Clouds;
-  dt: number;
-  sys: Sys;
-  timezone: number;
-  id: number;
-  name: string;
-  cod: number;
-}
-
-
-interface WeatherMap {
-    dt: number,
-    dt_txt: string;
-    main: {
-      temp: number;
-    };
-    weather: {
-      description: string;
-    }[];
-  }
-
-interface ForecastData {
-    list: WeatherMap[];
-  }
+import * as int from '../lib/definitions'
 
 
 const CharMapForecast = ({city} : { city : string}) => {
-    const [forecastData, setForecastData] = useState<ForecastData | null>(null);
-    const chartRef = useRef<HTMLCanvasElement | null>(null);
+    const [forecastData, setForecastData] = useState<int.ForecastData | null>(null);
+    const chartRef = useRef<HTMLCanvasElement & { chart?: Chart }| null>(null);
     const apiKey = 'bb5192b15e1c1a93f2a8a8f7afcc5d8b'; 
     
     useEffect(() => {
@@ -93,7 +16,7 @@ const CharMapForecast = ({city} : { city : string}) => {
           const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}`);
   
           if (response.ok) {
-            const result: ForecastData = await response.json();
+            const result: int.ForecastData = await response.json();
             setForecastData(result);
             console.log(result)
           } else {
@@ -120,7 +43,7 @@ const CharMapForecast = ({city} : { city : string}) => {
           const setDate = new Set(allDates);
           const chartLabels = Array.from(setDate);  
           const chartData = forecastData.list.map((forecast) => Math.round(forecast.main.temp - 273.15));
-          const ctx = chartRef.current.getContext('2d');
+          const ctx = chartRef.current.getContext('2d') as CanvasRenderingContext2D;;
       
           if (chartRef.current.chart) {
             chartRef.current.chart.destroy();
@@ -158,53 +81,9 @@ const CharMapForecast = ({city} : { city : string}) => {
     );
   };
 
-export const MapForecast = ({city}  :  {city : string}) => {
-  const [forecastData, setForecastData] = useState<ForecastData | null>(null);
-  const apiKey = 'bb5192b15e1c1a93f2a8a8f7afcc5d8b'; 
-
-  useEffect(() => {
-    const fetchForecastData = async () => {
-      try {
-        const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}`);
-
-        if (response.ok) {
-          const result : ForecastData = await response.json();
-          setForecastData(result);
-        } else {``
-          console.error('Failed to fetch forecast data');
-        }
-      } catch (error) {
-        console.error('Error during fetch:', error);
-      }
-    };
-
-    fetchForecastData();
-    console.log(forecastData, 'thiiiisss is forecastdata');
-  }, [city, apiKey]);
-
-  return (
-    <div>
-      <h2>Weekly Weather Forecast for {city}</h2>
-      {forecastData ? (
-        <div className='flex '>
-          {forecastData.list.map((forecast, index) => (
-            <div key={index}>
-              <p>Date and Time: {forecast.dt_txt}</p>
-              <p>Temperature: {Math.round(forecast.main.temp - 273.15)} </p>
-              <p>Weather: {forecast.weather[0].description}</p>
-              <hr />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p>Loading...</p>
-      )}
-    </div>
-  );
-};
 
 const WeatherForecast: React.FunctionComponent = () => {
-  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [weatherData, setWeatherData] = useState<int.WeatherData | null>(null);
   const [city, setCity] = useState<string>('moscow');
   const [modal, setModal] = useState<boolean>(false);
 
@@ -217,7 +96,7 @@ const WeatherForecast: React.FunctionComponent = () => {
         const response = await fetch(apiUrl);
         console.log(response)
         if (response.ok) {
-          const result: WeatherData = await response.json();
+          const result: int.WeatherData = await response.json();
           console.log(result);
           setWeatherData(result);
         } else {

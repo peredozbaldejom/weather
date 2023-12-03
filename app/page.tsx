@@ -1,13 +1,9 @@
-import WeatherForecast, { MapForecast } from "./ui/whether";
+import WeatherForecast from "./ui/whether";
 
 
 export default async function Page() {
 
-  return (
-    <>
-      <WeatherForecast />
-    </>
-  )
+  return <WeatherForecast />
 }
 
 
