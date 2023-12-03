@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent, useRef } from 'react';
+import { Chart } from 'chart.js/auto';
 
 interface Coord {
   lon: number;
@@ -66,6 +67,7 @@ interface WeatherData {
 
 
 interface WeatherMap {
+    dt: number,
     dt_txt: string;
     main: {
       temp: number;
@@ -80,9 +82,84 @@ interface ForecastData {
   }
 
 
+const CharMapForecast = ({city} : { city : string}) => {
+    const [forecastData, setForecastData] = useState<ForecastData | null>(null);
+    const chartRef = useRef<HTMLCanvasElement | null>(null);
+    const apiKey = 'bb5192b15e1c1a93f2a8a8f7afcc5d8b'; 
+    
+    useEffect(() => {
+      const fetchForecastData = async () => {
+        try {
+          const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}`);
+  
+          if (response.ok) {
+            const result: ForecastData = await response.json();
+            setForecastData(result);
+            console.log(result)
+          } else {
+            console.error('Failed to fetch forecast data with Chart');
+          }
+        } catch (error) {
+          console.error('Error during fetch:', error);
+        }
+      };
+  
+      fetchForecastData();
+    }, [city]);
+  
+    useEffect(() => {
+        if (forecastData && chartRef.current) {
+          const allDates = forecastData.list.map((forecast) => {
+            const date = new Date(forecast.dt * 1000)
+            let day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            const fD = `${day < 10 ? '0' : ''}${day}.${month}.${year}`;
+            return fD
+            });
+          const setDate = new Set(allDates);
+          const chartLabels = Array.from(setDate);  
+          const chartData = forecastData.list.map((forecast) => Math.round(forecast.main.temp - 273.15));
+          const ctx = chartRef.current.getContext('2d');
+      
+          if (chartRef.current.chart) {
+            chartRef.current.chart.destroy();
+          }
+      
+          chartRef.current.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: chartLabels,
+              datasets: [
+                {
+                  label: 'Температура (С)',
+                  data: chartData,
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1,
+                },
+              ],
+            },
+          });
+        }
+      }, [forecastData]);
+      
+    return (
+      <div>
+        <h2>Weekly Weather Forecast for {city}</h2>
+        {forecastData ? (
+          <div>
+            <canvas ref={chartRef}></canvas>
+          </div>
+        ) : (
+          <p>Loading...</p>
+        )}
+      </div>
+    );
+  };
+
 export const MapForecast = ({city}  :  {city : string}) => {
   const [forecastData, setForecastData] = useState<ForecastData | null>(null);
-//   const city = 'Moscow'; // Замените на название нужного города
   const apiKey = 'bb5192b15e1c1a93f2a8a8f7afcc5d8b'; 
 
   useEffect(() => {
@@ -93,7 +170,7 @@ export const MapForecast = ({city}  :  {city : string}) => {
         if (response.ok) {
           const result : ForecastData = await response.json();
           setForecastData(result);
-        } else {
+        } else {``
           console.error('Failed to fetch forecast data');
         }
       } catch (error) {
@@ -102,17 +179,18 @@ export const MapForecast = ({city}  :  {city : string}) => {
     };
 
     fetchForecastData();
+    console.log(forecastData, 'thiiiisss is forecastdata');
   }, [city, apiKey]);
 
   return (
     <div>
       <h2>Weekly Weather Forecast for {city}</h2>
       {forecastData ? (
-        <div>
+        <div className='flex '>
           {forecastData.list.map((forecast, index) => (
             <div key={index}>
               <p>Date and Time: {forecast.dt_txt}</p>
-              <p>Temperature: {forecast.main.temp} K</p>
+              <p>Temperature: {Math.round(forecast.main.temp - 273.15)} </p>
               <p>Weather: {forecast.weather[0].description}</p>
               <hr />
             </div>
@@ -125,11 +203,9 @@ export const MapForecast = ({city}  :  {city : string}) => {
   );
 };
 
-
-
 const WeatherForecast: React.FunctionComponent = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [city, setCity] = useState<string>('');
+  const [city, setCity] = useState<string>('moscow');
   const [modal, setModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -154,8 +230,6 @@ const WeatherForecast: React.FunctionComponent = () => {
 
     fetchWeatherData();
   }, [city]);
-
-
 
   const handleCityChange = (e: ChangeEvent<HTMLInputElement>) => {
     setCity(e.target.value);
@@ -216,26 +290,18 @@ const WeatherForecast: React.FunctionComponent = () => {
       </div>
     
     { modal ? (
-        <div id="myModal" className="fixed inset-0 z-10 overflow-hidden backdrop-blur-lg  flex items-center justify-center transition-transform duration-300">
+        <div onClick={(e) => {setModal(!modal)}} id="myModal" className="fixed inset-0 z-10 overflow-hidden backdrop-blur-lg  flex items-center justify-center transition-transform duration-300">
         <div className="modal-container p-6 backdrop-blur-sm bg-white/90 w-11/12 sm:w-11/12 md:w-8/12 lg:w-6/12 rounded-md shadow-sm">
             <h2 className="text-2xl font-semibold mb-6">{city}</h2>
             {weatherData ? (
-                <div>
-                    {/* <p>Temperature: {Math.round(weatherData.main.temp - 273.15)} C</p>
-                    <p>Weather: {weatherData.weather[0].description}</p>
-                    <p>Pressure: {weatherData.main.pressure}</p>
-                    <p>Wind: {weatherData.wind.speed}</p>
-                     */}
-                     <MapForecast city={city} />
-                </div>
+                     <CharMapForecast city={city} />
             ) : (
                 <p>Loading...</p>
             )}
-
             <div className="flex justify-end">
                 <button 
                     className="bg-gradient-to-r from-gray-100 to-slate-200  border border-fuchsia-00 hover:border-violet-400  text-gray-800 font-semibold py-2 px-4 rounded-md transition-colors duration-400" 
-                    onClick={(e) => {setModal(!modal)}}>Cancel</button>
+                    >Cancel</button>
             </div>
         </div>
     </div>
