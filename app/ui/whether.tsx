@@ -84,7 +84,7 @@ const CharMapForecast = ({city} : { city : string}) => {
 
 const WeatherForecast: React.FunctionComponent = () => {
   const [weatherData, setWeatherData] = useState<int.WeatherData | null>(null);
-  const [city, setCity] = useState<string>('moscow');
+  const [city, setCity] = useState<string>('');
   const [modal, setModal] = useState<boolean>(false);
 
   useEffect(() => {
