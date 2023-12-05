@@ -48,17 +48,22 @@ const CharMapForecast = ({city} : { city : string}) => {
           if (chartRef.current.chart) {
             chartRef.current.chart.destroy();
           }
-      
+          const normalizeTemperature = (temperature: number) => {
+            const minTemp = Math.min(...chartData);
+            const maxTemp = Math.max(...chartData);
+            const normalizedTemp = (temperature  - minTemp) / (maxTemp - minTemp);
+            return normalizedTemp;
+          };  
+
           chartRef.current.chart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
               labels: chartLabels,
               datasets: [
                 {
                   label: 'Температура (С)',
                   data: chartData,
-                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                  borderColor: 'rgba(75, 192, 192, 1)',
+                  backgroundColor: chartData.map((temp) => `rgba(0, 0, 255, ${normalizeTemperature(temp)})`),
                   borderWidth: 1,
                 },
               ],
@@ -66,7 +71,8 @@ const CharMapForecast = ({city} : { city : string}) => {
           });
         }
       }, [forecastData]);
-      
+    
+
     return (
       <div>
         <h2>Weekly Weather Forecast for {city}</h2>
